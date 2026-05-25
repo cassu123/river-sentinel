@@ -1,0 +1,20 @@
+{
+    "unit_id": "RS-001",
+    "model": "Quadruped-X1",
+    "hardware_revision": "1.2",
+    "capabilities": {
+        "locomotion": "quadruped",
+        "vision": true,
+        "gps": true,
+        "cellular": true
+    },
+    "calibration": {
+        "servo_offsets": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "imu_offset": [0.0, 0.0, 0.0]
+    },
+    "safety": {
+        "geofence_radius_m": 500,
+        "battery_critical_pct": 15.0,
+        "rth_enabled": true
+    }
+}

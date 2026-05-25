@@ -1,0 +1,10 @@
+rclpy
+numpy
+opencv-python
+pyyaml
+pyserial
+requests
+geopy
+Flask
+pyudev
+psutil
