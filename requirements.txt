@@ -8,3 +8,5 @@ geopy
 Flask
 pyudev
 psutil
+pytest
+hypothesis

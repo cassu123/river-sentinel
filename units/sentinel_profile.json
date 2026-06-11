@@ -1,9 +1,13 @@
 {
     "unit_id": "RS-001",
+    "unit_name": "TBD",
+    "program": "river-sentinel",
+    "platform_type": "QUADRUPED",
     "model": "Quadruped-X1",
     "hardware_revision": "1.2",
     "capabilities": {
         "locomotion": "quadruped",
+        "manipulator": true,
         "vision": true,
         "gps": true,
         "cellular": true
@@ -12,9 +16,32 @@
         "servo_offsets": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         "imu_offset": [0.0, 0.0, 0.0]
     },
+    "manipulator": {
+        "type": "arm_5dof",
+        "joint_count": 5
+    },
     "safety": {
-        "geofence_radius_m": 500,
+        "rth_enabled": true,
         "battery_critical_pct": 15.0,
-        "rth_enabled": true
+        "geofence": {
+            "boundary_id": "home-perimeter-01",
+            "max_radius_m": 500,
+            "base_location": {
+                "latitude": 0.0,
+                "longitude": 0.0,
+                "altitude_m": 0.0
+            },
+            "vertices": [
+                {"latitude": 0.0020, "longitude": -0.0020},
+                {"latitude": 0.0020, "longitude": 0.0020},
+                {"latitude": -0.0020, "longitude": 0.0020},
+                {"latitude": -0.0020, "longitude": -0.0020}
+            ]
+        }
+    },
+    "connectivity": {
+        "api_base_url": "https://riversongai.com/api/sentinel/",
+        "telemetry_interval_s": 5,
+        "command_poll_interval_s": 1
     }
 }

@@ -1,25 +1,38 @@
 #!/usr/bin/env python3
-# River Sentinel - Autonomous Quadruped Security System
+"""Unit profile loader.
+
+Loads a robot's profile (units/*.json) and exposes it as typed
+configuration shared by every subsystem. The profile path can be
+overridden with the RIVER_UNIT_PROFILE environment variable, which lets
+the same codebase run different unit profiles (quadruped, wheeled, ...)
+without code changes.
+"""
 
 import json
 import os
+from pathlib import Path
+from typing import Any, Optional
+
+from core.constants import GEOFENCE_LIMIT_M
+from core.models import GeofenceBoundary, GPSCoordinate, PlatformType
+
+DEFAULT_PROFILE_PATH = Path(__file__).resolve().parent.parent / "units" / "sentinel_profile.json"
+
 
 class Config:
-    def __init__(self, profile_path="/home/hoke/river-sentinel/units/sentinel_profile.json"):
-        self.profile_path = profile_path
-        self.data = self.load_profile()
+    def __init__(self, profile_path: Optional[str] = None):
+        self.profile_path = Path(profile_path or os.environ.get("RIVER_UNIT_PROFILE", DEFAULT_PROFILE_PATH))
+        self.data = self._load_profile()
 
-    def load_profile(self):
-        if not os.path.exists(self.profile_path):
-            print(f"Error: Profile not found at {self.profile_path}")
-            return {}
-        
-        with open(self.profile_path, 'r') as f:
+    def _load_profile(self) -> dict:
+        if not self.profile_path.exists():
+            raise FileNotFoundError(f"Unit profile not found at {self.profile_path}")
+        with open(self.profile_path, "r") as f:
             return json.load(f)
 
-    def get(self, key, default=None):
-        keys = key.split('.')
-        val = self.data
+    def get(self, key: str, default: Any = None) -> Any:
+        keys = key.split(".")
+        val: Any = self.data
         for k in keys:
             if isinstance(val, dict):
                 val = val.get(k)
@@ -28,11 +41,49 @@ class Config:
         return val if val is not None else default
 
     @property
-    def unit_id(self):
-        return self.get('unit_id', 'UNKNOWN')
+    def unit_id(self) -> str:
+        return self.get("unit_id", "UNKNOWN")
 
     @property
-    def rth_enabled(self):
-        return self.get('safety.rth_enabled', True)
+    def program(self) -> str:
+        return self.get("program", "river-sentinel")
 
-config = Config()
+    @property
+    def platform_type(self) -> PlatformType:
+        return PlatformType(self.get("platform_type", PlatformType.QUADRUPED.value))
+
+    @property
+    def capabilities(self) -> dict:
+        return self.get("capabilities", {})
+
+    def has_capability(self, name: str) -> bool:
+        return bool(self.capabilities.get(name, False))
+
+    @property
+    def rth_enabled(self) -> bool:
+        return self.get("safety.rth_enabled", True)
+
+    @property
+    def battery_critical_pct(self) -> float:
+        return self.get("safety.battery_critical_pct", 15.0)
+
+    @property
+    def geofence_boundary(self) -> GeofenceBoundary:
+        geofence = self.get("safety.geofence", {})
+        base = geofence.get("base_location", {})
+        base_location = GPSCoordinate(
+            latitude=base.get("latitude", 0.0),
+            longitude=base.get("longitude", 0.0),
+            altitude_m=base.get("altitude_m", 0.0),
+        )
+        vertices = [
+            GPSCoordinate(latitude=v["latitude"], longitude=v["longitude"])
+            for v in geofence.get("vertices", [])
+        ]
+        return GeofenceBoundary(
+            boundary_id=geofence.get("boundary_id", f"{self.unit_id}-default"),
+            unit_id=self.unit_id,
+            vertices=vertices,
+            base_location=base_location,
+            max_radius_m=geofence.get("max_radius_m", GEOFENCE_LIMIT_M),
+        )

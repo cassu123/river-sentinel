@@ -3,32 +3,30 @@
 
 import rclpy
 from rclpy.node import Node
-from core.config import config
-from core.constants import DEFAULT_NODE_NAME, VERSION
+
+from core.config import Config
+from core.constants import CONTROL_LOOP_PERIOD_S, DEFAULT_NODE_NAME, VERSION
+from core.orchestrator import RiverCore
+
 
 class RiverSentinelCore(Node):
     def __init__(self):
         super().__init__(DEFAULT_NODE_NAME)
+        self.config = Config()
         self.get_logger().info(f"Initializing River Sentinel Core v{VERSION}")
-        self.get_logger().info(f"Unit ID: {config.unit_id}")
-        
-        # Initialize components (Placeholders for actual module integration)
-        self.setup_subscribers()
-        self.setup_publishers()
-        self.create_timer(1.0, self.main_loop)
+        self.get_logger().info(
+            f"Unit ID: {self.config.unit_id} ({self.config.platform_type.value})"
+        )
 
-    def setup_subscribers(self):
-        # Example subscriber
-        # self.create_subscription(BatteryState, TOPIC_BATTERY, self.battery_callback, 10)
-        pass
-
-    def setup_publishers(self):
-        # Example publisher
-        # self.alert_pub = self.create_publisher(String, TOPIC_ALERTS, 10)
-        pass
+        self.core = RiverCore(self.config)
+        self.create_timer(CONTROL_LOOP_PERIOD_S, self.main_loop)
 
     def main_loop(self):
-        self.get_logger().debug("Heartbeat - System Normal")
+        self.core.tick()
+        if self.core.estop.is_triggered():
+            self.get_logger().warning(
+                f"E-Stop active: {self.core.estop.get_trigger_reason()}"
+            )
 
 def main(args=None):
     rclpy.init(args=args)
