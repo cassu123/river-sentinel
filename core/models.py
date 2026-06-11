@@ -142,6 +142,24 @@ class Fault:
 
 
 # ---------------------------------------------------------------------------
+# Alerts
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Alert:
+    """Operator-facing notification dispatched to the River Song API.
+
+    Per design.md P9, every dispatched alert must correspond to an active
+    fault in the FaultManager registry (linked via fault_id).
+    """
+    alert_id: str
+    fault_id: str
+    severity: FaultSeverity
+    message: str
+    timestamp: float
+
+
+# ---------------------------------------------------------------------------
 # Vision
 # ---------------------------------------------------------------------------
 
