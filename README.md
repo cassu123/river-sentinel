@@ -12,11 +12,12 @@ computer vision, manipulation, and safety systems.
 River Sentinel is one of several robot/device programs in the River Song AI
 ecosystem (riversongai.com). The `core/`, `safety/`, `connectivity/`, and
 `telemetry/` layers are written to be **platform-agnostic**: a unit profile
-(`units/*.json`) declares its `platform_type` and `capabilities`, and
-`core/robot_factory.py` wires up the matching locomotion/manipulator plugins.
-This lets the same foundation support other River Song unit types (wheeled,
-tracked, aerial, arm-equipped chore robots, ...) without changes to the
-safety or connectivity layers.
+(`units/*.json`) declares its `platform_type`, `capabilities`, and a
+`sensors` array, and `core/robot_factory.py` wires up the matching
+locomotion/manipulator/sensor-driver plugins. This lets the same foundation
+support other River Song unit types (wheeled, tracked, aerial, humanoid,
+arm-equipped chore robots, ...) - each with its own sensor mix and count -
+without changes to the safety or connectivity layers.
 
 ## Key Features
 - **Autonomous Patrol:** Intelligent path planning and obstacle avoidance.

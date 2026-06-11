@@ -23,7 +23,26 @@ class PlatformType(Enum):
     WHEELED = "WHEELED"
     TRACKED = "TRACKED"
     AERIAL = "AERIAL"
+    HUMANOID = "HUMANOID"
     STATIONARY = "STATIONARY"
+
+
+class SensorType(Enum):
+    """Physical sensor/actuator-bus categories a unit profile can declare.
+
+    Each unit lists its actual sensors under "sensors" in units/*.json;
+    the set and count of sensors varies freely per unit (see SensorSpec).
+    """
+    IMU = "IMU"
+    GPS = "GPS"
+    CAMERA = "CAMERA"
+    LIDAR = "LIDAR"
+    ULTRASONIC = "ULTRASONIC"
+    FORCE_TORQUE = "FORCE_TORQUE"
+    SERVO_BUS = "SERVO_BUS"
+    BATTERY = "BATTERY"
+    MICROPHONE = "MICROPHONE"
+    ENCODER = "ENCODER"
 
 
 class FaultSeverity(Enum):
@@ -109,6 +128,21 @@ class GPSCoordinate:
             raise ValueError(f"longitude out of range: {self.longitude}")
         if self.accuracy_m < 0.0:
             raise ValueError(f"accuracy_m must be >= 0: {self.accuracy_m}")
+
+
+@dataclass
+class SensorSpec:
+    """Declarative description of one physical sensor/bus instance.
+
+    Unit profiles list these under "sensors" so hardware/ drivers can be
+    built generically by core/robot_factory.py: it looks up a registered
+    factory by `sensor_type` and instantiates it with this spec, regardless
+    of which platform or sensor mix a given unit has.
+    """
+    name: str
+    sensor_type: SensorType
+    interface: str
+    params: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

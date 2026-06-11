@@ -11,10 +11,10 @@ without code changes.
 import json
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from core.constants import GEOFENCE_LIMIT_M
-from core.models import GeofenceBoundary, GPSCoordinate, PlatformType
+from core.models import GeofenceBoundary, GPSCoordinate, PlatformType, SensorSpec, SensorType
 
 DEFAULT_PROFILE_PATH = Path(__file__).resolve().parent.parent / "units" / "sentinel_profile.json"
 
@@ -58,6 +58,34 @@ class Config:
 
     def has_capability(self, name: str) -> bool:
         return bool(self.capabilities.get(name, False))
+
+    @property
+    def sensors(self) -> List[SensorSpec]:
+        """Declarative sensor inventory for this unit.
+
+        Every unit lists whichever sensors it actually has under
+        "sensors" in its profile; the list varies freely per unit
+        (a quadruped's leg servo bus vs. a humanoid's foot force
+        sensors, for example).
+        """
+        return [
+            SensorSpec(
+                name=entry["name"],
+                sensor_type=SensorType(entry["type"]),
+                interface=entry.get("interface", ""),
+                params=entry.get("params", {}),
+            )
+            for entry in self.get("sensors", [])
+        ]
+
+    def get_sensor(self, name: str) -> Optional[SensorSpec]:
+        for spec in self.sensors:
+            if spec.name == name:
+                return spec
+        return None
+
+    def sensors_of_type(self, sensor_type: SensorType) -> List[SensorSpec]:
+        return [spec for spec in self.sensors if spec.sensor_type == sensor_type]
 
     @property
     def rth_enabled(self) -> bool:

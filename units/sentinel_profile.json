@@ -20,6 +20,14 @@
         "type": "arm_5dof",
         "joint_count": 5
     },
+    "sensors": [
+        {"name": "imu_main", "type": "IMU", "interface": "i2c", "params": {"address": "0x68"}},
+        {"name": "gps_main", "type": "GPS", "interface": "uart", "params": {"port": "/dev/ttyAMA0", "baud": 9600}},
+        {"name": "front_camera", "type": "CAMERA", "interface": "csi", "params": {"resolution": [1280, 720], "fps": 30}},
+        {"name": "leg_servo_bus", "type": "SERVO_BUS", "interface": "serial", "params": {"port": "/dev/ttyACM0", "baud": 115200, "joint_count": 12}},
+        {"name": "arm_servo_bus", "type": "SERVO_BUS", "interface": "serial", "params": {"port": "/dev/ttyACM1", "baud": 115200, "joint_count": 5}},
+        {"name": "main_battery", "type": "BATTERY", "interface": "i2c", "params": {"address": "0x36"}}
+    ],
     "safety": {
         "rth_enabled": true,
         "battery_critical_pct": 15.0,
